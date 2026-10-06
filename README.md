@@ -40,6 +40,7 @@ El desarrollo responde estrictamente a la guía y rúbrica de evaluación oficia
 │   ├── exploracion_eda.py     # Análisis exploratorio (EDA) y gráficos 1 al 4
 │   └── modelo_regresion.py    # Modelo de regresión OLS, baseline y gráficos 5 y 6
 ├── ventanas.csv               # Dataset consolidado de 25 ventanas de medición
+├── resultados_modelo.log      # Registro textual y reproducible de la ejecución del modelo
 ├── requirements.txt           # Dependencias de Python verificadas
 ├── README.md                  # Guía de ejecución y documentación técnica
 └── Taller_5_MIA.pdf           # Guía oficial del taller

@@ -22,18 +22,39 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # -------------------------------------------------------------
-# 1. Configuración de Rutas Dinámicas
+# 1. Configuración de Rutas Dinámicas y Registro Dual (Log)
 # -------------------------------------------------------------
 CURRENT_DIR = Path(__file__).resolve().parent
 BASE_DIR = CURRENT_DIR.parent if CURRENT_DIR.name == "scripts" else CURRENT_DIR
 CSV_PATH = BASE_DIR / "ventanas.csv"
 GRAFICOS_DIR = BASE_DIR / "graficos"
+LOG_PATH = BASE_DIR / "resultados_modelo.log"
 GRAFICOS_DIR.mkdir(parents=True, exist_ok=True)
+
+class DualLogger:
+    def __init__(self, filepath):
+        self.terminal = sys.stdout
+        self.log_file = open(filepath, "w", encoding="utf-8")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log_file.write(message)
+
+    def flush(self):
+        self.terminal.flush()
+        self.log_file.flush()
+
+    def close(self):
+        self.log_file.close()
+
+logger = DualLogger(LOG_PATH)
+sys.stdout = logger
 
 print("=" * 80)
 print("TALLER 5: MODELADO DE REGRESIÓN LINEAL Y PREDICCIÓN BAJO CONGESTIÓN")
 print(f"Ruta base del proyecto: {BASE_DIR}")
 print(f"Dataset analizado:     {CSV_PATH}")
+print(f"Archivo de log:        {LOG_PATH}")
 print("=" * 80)
 
 if not CSV_PATH.exists():
@@ -426,4 +447,8 @@ print("TABLA CONSOLIDADA DE MÉTRICAS (EVIDENCIAS 4 Y 5)")
 print("=" * 80)
 print(resumen_metricas.to_string(index=False))
 print("=" * 80)
-print("\n[PROCESO COMPLETADO EXITOSAMENTE]")
+print(f"\n[OK] Registro completo de la terminal guardado en: {LOG_PATH}")
+print("[PROCESO COMPLETADO EXITOSAMENTE]")
+
+logger.close()
+sys.stdout = logger.terminal

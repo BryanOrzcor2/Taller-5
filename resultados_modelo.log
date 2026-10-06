@@ -1,0 +1,71 @@
+================================================================================
+TALLER 5: MODELADO DE REGRESIÓN LINEAL Y PREDICCIÓN BAJO CONGESTIÓN
+Ruta base del proyecto: C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5
+Dataset analizado:     C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5\ventanas.csv
+Archivo de log:        C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5\resultados_modelo.log
+================================================================================
+
+[PARTICIÓN DE DATOS]
+• Entrenamiento (0M, 20M, 40M, 60M): 19 ventanas
+  - Rango de Tasa TX en train:        [0.0005, 60.0700] Mbps
+  - Rango de RTT en train:            [9.00, 27.40] ms
+• Prueba Controlada (80M):            3 ventanas
+  - Rango de Tasa TX en test (80M):   [79.9700, 80.1600] Mbps
+• Escenario Congestionado (100M):     3 ventanas
+  - Rango de Tasa TX en cong. (100M): [99.7300, 100.6700] Mbps
+
+[PARÁMETROS DEL MODELO LINEAL OLS]
+• Intercepto (beta_0):               13.9377 ms
+  -> Interpretación: RTT basal de propagación y procesamiento en el stack de los 3 PCs (sin switch intermedio).
+• Pendiente (beta_1):                0.1755 ms/Mbps
+  -> Interpretación: Incremento medio de 0.1755 ms por cada Mbps inyectado.
+• R^2 en conjunto de entrenamiento:  0.6359
+• Línea base constante (mediana):   16.00 ms
+
+[EVALUACIÓN EN PRUEBA CONTROLADA (80 Mbps - Pre-Congestión)]
+• RTT Medido Real (ms):              [34.5 38.2 41. ]
+• RTT Predicho Modelo (ms):          [27.98 28.   27.97]
+• Residuos (y - y_hat) (ms):         [ 6.52 10.2  13.03]
+• MAE Modelo Lineal:                 9.917 ms
+• RMSE Modelo Lineal:                10.268 ms
+• R^2 Modelo Lineal:                 -13.879
+• MAE Línea Base Constante:          21.900 ms
+• Conclusión 80M: El modelo lineal supera a la mediana baseline (MAE 9.92 vs 21.90 ms),
+  aunque los residuos positivos (+9.9 ms) ya anuncian el inicio del encolamiento.
+
+================================================================================
+PUNTO 6: PREDICCIÓN Y RUPTURA DE LINEALIDAD BAJO CONGESTIÓN (100 Mbps)
+================================================================================
+• Naturaleza del pronóstico:         EXTRAPOLACIÓN
+  - Rango de entrenamiento:          [0.00, 60.07] Mbps
+  - Punto evaluado:                  ~100.13 Mbps (Muy fuera del dominio lineal)
+• Predicción a priori del modelo:    [31.48 31.6  31.44] ms (Promedio: 31.51 ms)
+• Medición Real en Laboratorio:      [ 98.4 125.6 142. ] ms
+  - Mediana Real:                    125.60 ms
+  - Rango Real:                      [98.40, 142.00] ms
+• Residuos Sistemáticos (y - y_hat): [ 66.92  94.   110.56] ms
+• MAE en Congestión:                 90.49 ms (Subestimación del 287.2%)
+• RMSE en Congestión:                92.26 ms
+
+[EVIDENCIAS FÍSICAS DE CONGESTIÓN Y SATURACIÓN]
+1. Estancamiento de Caudal (Goodput): TX=100.13 Mbps, pero RX=76.31 Mbps (Cuello de botella en B a ~76 Mbps)
+2. Pérdida Crítica de Paquetes:      22.23% de sondas perdidas
+3. Descarte Masivo en Buffers:       113,577 paquetes descartados
+4. Causa del fallo de ML:            Fenómeno de Bufferbloat en la NIC/socket del servidor B y teoría de colas M/M/1.
+   La relación tiempo de espera vs utilización es asintótica: W = 1 / (mu - lambda).
+   El modelo lineal OLS asume tubería infinita sin colas; por eso subestima en >90 ms.
+
+[OK] Gráfico 5 guardado en: C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5\graficos\grafico5_regresion_lineal.png
+[OK] Gráfico 6 guardado en: C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5\graficos\grafico6_analisis_residuos.png
+
+================================================================================
+TABLA CONSOLIDADA DE MÉTRICAS (EVIDENCIAS 4 Y 5)
+================================================================================
+                       Conjunto  Ventanas (N) Rango Tasa TX (Mbps) MAE Modelo (ms) RMSE Modelo (ms)      R2 MAE Baseline (ms)
+        Entrenamiento (0 - 60M)            19        [0.00, 60.07]            2.11             3.04   0.636              4.00
+    Prueba (80M Pre-Congestión)             3       [79.97, 80.16]            9.92            10.27 -13.879             21.90
+Congestión (100M Extrapolación)             3      [99.73, 100.67]           90.49            92.26 -25.329            106.00
+================================================================================
+
+[OK] Registro completo de la terminal guardado en: C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5\resultados_modelo.log
+[PROCESO COMPLETADO EXITOSAMENTE]
