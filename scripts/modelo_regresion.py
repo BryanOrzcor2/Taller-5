@@ -410,6 +410,105 @@ plt.close(fig6)
 print(f"[OK] Gráfico 6 guardado en: {f6_path}")
 
 # -------------------------------------------------------------
+# FIGURA 7: Caudal Ofrecido (TX) vs Caudal Recibido (RX) y Saturación (Punto 6)
+# -------------------------------------------------------------
+fig7, ax7 = plt.subplots(figsize=(9, 5.5), dpi=300)
+ax7.plot([0, 105], [0, 105], "k--", alpha=0.6, linewidth=1.5, label="Caudal Ideal (Sin pérdidas: RX = TX)")
+sc7 = ax7.scatter(
+    df["tasa_tx_mbps"],
+    df["tasa_rx_mbps"],
+    c=df["perdida_pct"],
+    cmap="YlOrRd",
+    s=85,
+    edgecolors="black",
+    linewidths=0.8,
+    zorder=4,
+    label="Caudal RX Medido (Color = % Pérdida)"
+)
+cbar7 = plt.colorbar(sc7, ax=ax7)
+cbar7.set_label("Pérdida de Paquetes (%)", fontsize=10)
+
+ax7.axhline(76.31, color="#08519c", linestyle=":", linewidth=2.0, label="Capacidad Efectiva Máxima (~76.3 Mbps)")
+ax7.axvspan(76, 105, color="#fee0d2", alpha=0.35, label="Zona de Congestión / Cuello de Botella")
+
+ax7.annotate(
+    "Estancamiento de Caudal en Receptor B\n(Capacidad saturada a ~76.3 Mbps,\n113,577 descartes acumulados)",
+    xy=(100.13, 76.31),
+    xytext=(55, 62),
+    arrowprops=dict(facecolor="#b30000", arrowstyle="->", lw=1.8),
+    fontsize=9.0,
+    fontweight="bold",
+    color="#7f0000",
+    bbox=dict(boxstyle="round,pad=0.35", facecolor="#fee8c8", edgecolor="#e34a33", alpha=0.95)
+)
+
+ax7.set_title("Taller 5: Caudal Ofrecido (TX) vs Caudal Efectivo Recibido (RX)", fontsize=13, fontweight="bold", pad=12)
+ax7.set_xlabel("Tasa de Transmisión Ofrecida TX (Mbps)", fontsize=11, labelpad=8)
+ax7.set_ylabel("Caudal Recibido Goodput RX (Mbps)", fontsize=11, labelpad=8)
+ax7.set_xlim(-2, 106)
+ax7.set_ylim(-2, 106)
+ax7.legend(loc="upper left", fontsize=8.5, framealpha=0.92)
+fig7.tight_layout()
+
+f7_path = GRAFICOS_DIR / "grafico7_caudal_tx_vs_rx_congestion.png"
+fig7.savefig(f7_path, dpi=300)
+plt.close(fig7)
+print(f"[OK] Gráfico 7 guardado en: {f7_path}")
+
+# -------------------------------------------------------------
+# FIGURA 8: Predicción frente a Medición Directa (y vs y_hat) (Punto 5)
+# -------------------------------------------------------------
+fig8, ax8 = plt.subplots(figsize=(7.5, 6.5), dpi=300)
+ax8.plot([0, 150], [0, 150], "k--", linewidth=1.5, label="Predicción Perfecta ($y = \\hat{y}$)")
+
+ax8.scatter(
+    train_df["rtt_medio_ms"],
+    modelo.predict(X_train),
+    color="#1f77b4",
+    s=65,
+    alpha=0.85,
+    edgecolors="black",
+    linewidths=0.8,
+    label="Entrenamiento (0 - 60 Mbps, N=19)",
+    zorder=4
+)
+ax8.scatter(
+    test_80_df["rtt_medio_ms"],
+    pred_80,
+    color="#2ca02c",
+    s=90,
+    marker="^",
+    edgecolors="black",
+    linewidths=0.9,
+    label="Prueba 80M Real (Pre-congestión, N=3)",
+    zorder=4
+)
+ax8.scatter(
+    test_100_df["rtt_medio_ms"],
+    pred_100,
+    color="#d62728",
+    s=110,
+    marker="X",
+    edgecolors="black",
+    linewidths=1.0,
+    label="Congestión 100M Real (Subestimación severa, N=3)",
+    zorder=5
+)
+
+ax8.set_title("Taller 5: Predicción frente a Medición ($y$ Real vs $\\hat{y}$ Predicho)", fontsize=13, fontweight="bold", pad=12)
+ax8.set_xlabel("RTT Medido Real en Laboratorio $y$ (ms)", fontsize=11, labelpad=8)
+ax8.set_ylabel("RTT Estimado por Modelo Lineal $\\hat{y}$ (ms)", fontsize=11, labelpad=8)
+ax8.set_xlim(0, 155)
+ax8.set_ylim(0, 155)
+ax8.legend(loc="upper left", fontsize=8.5, framealpha=0.92)
+fig8.tight_layout()
+
+f8_path = GRAFICOS_DIR / "grafico8_prediccion_vs_medicion.png"
+fig8.savefig(f8_path, dpi=300)
+plt.close(fig8)
+print(f"[OK] Gráfico 8 guardado en: {f8_path}")
+
+# -------------------------------------------------------------
 # 7. Resumen de Métricas para el Informe
 # -------------------------------------------------------------
 resumen_metricas = pd.DataFrame([

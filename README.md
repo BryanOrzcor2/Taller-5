@@ -25,17 +25,19 @@ El desarrollo responde estrictamente a la guía y rúbrica de evaluación oficia
 ├── Datos del Servidor/        # Métricas y registros del servidor central
 ├── Ping Equipo A1/            # Mediciones de latencia y RTT base y con carga (A1)
 ├── Ping Equipo A2/            # Mediciones de latencia y RTT base y con carga (A2)
-├── graficos/                  # 6 visualizaciones estadísticas generadas (alta resolución)
-│   ├── grafico1_dispersion_tasa_vs_rtt.png
-│   ├── grafico2_evolucion_temporal.png
-│   ├── grafico3_boxplot_rtt.png
-│   ├── grafico4_histograma_rtt.png
-│   ├── grafico5_regresion_lineal.png
-│   └── grafico6_analisis_residuos.png
+├── graficos/                  # 8 visualizaciones estadísticas generadas (300 DPI)
+│   ├── grafico1_dispersion_tasa_vs_rtt.png        # Dispersión TX vs RTT (c=Pérdida)
+│   ├── grafico2_evolucion_temporal.png            # Serie temporal de RTT y pérdida por ventana
+│   ├── grafico3_boxplot_rtt.png                   # Diagrama de caja de RTT por escenario
+│   ├── grafico4_histograma_rtt.png                # Histogramas de distribución y asimetría
+│   ├── grafico5_regresion_lineal.png              # Ajuste OLS, extrapolación y quiebre
+│   ├── grafico6_analisis_residuos.png             # Diagnóstico de residuos (y - y_hat) vs carga
+│   ├── grafico7_caudal_tx_vs_rx_congestion.png   # Caudal ofrecido vs Goodput (cuello de botella)
+│   └── grafico8_prediccion_vs_medicion.png        # Predicción vs medición directa (y vs y_hat)
 ├── scripts/                   # Códigos fuente reproducibles en Python
 │   ├── construir_dataset.py   # Pipeline ETL: parseo de pings, iperf y contadores
 │   ├── exploracion_eda.py     # Análisis exploratorio (EDA) y gráficos 1 al 4
-│   └── modelo_regresion.py    # Modelo de regresión OLS, baseline y gráficos 5 y 6
+│   └── modelo_regresion.py    # Modelo de regresión OLS, baseline y gráficos 5 al 8
 ├── ventanas.csv               # Dataset consolidado de 25 ventanas de medición
 ├── resultados_modelo.log      # Registro textual y reproducible de la ejecución del modelo
 ├── requirements.txt           # Dependencias de Python verificadas
@@ -83,7 +85,7 @@ python scripts/exploracion_eda.py
 ```bash
 python scripts/modelo_regresion.py
 ```
-* **Salidas:** Genera los gráficos 5 y 6 en `graficos/`, calcula los parámetros del modelo lineal $\hat{y} = \beta_0 + \beta_1 x$, evalúa el conjunto de prueba a 80 Mbps, contrasta contra la línea base de la mediana, y evalúa el fallo de extrapolación a 100 Mbps.
+* **Salidas:** Genera los gráficos 5, 6, 7 y 8 en `graficos/`, calcula los parámetros del modelo lineal $\hat{y} = \beta_0 + \beta_1 x$, evalúa el conjunto de prueba a 80 Mbps, contrasta contra la línea base de la mediana, y evalúa el fallo de extrapolación a 100 Mbps con diagnóstico de cuello de botella (Goodput RX) y dispersión directa $y$ vs $\hat{y}$.
 
 ---
 
