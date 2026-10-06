@@ -32,9 +32,6 @@ El desarrollo responde estrictamente a la guía y rúbrica de evaluación oficia
 │   ├── grafico4_histograma_rtt.png
 │   ├── grafico5_regresion_lineal.png
 │   └── grafico6_analisis_residuos.png
-├── informe/                   # Informe final escrito (LaTeX / Overleaf)
-│   ├── graficos/              # Copia local de figuras para compilación directa
-│   └── informe_taller5.tex    # Documento de 5 páginas con la solución completa
 ├── scripts/                   # Códigos fuente reproducibles en Python
 │   ├── construir_dataset.py   # Pipeline ETL: parseo de pings, iperf y contadores
 │   ├── exploracion_eda.py     # Análisis exploratorio (EDA) y gráficos 1 al 4
@@ -104,23 +101,6 @@ python scripts/modelo_regresion.py
 | **Entrenamiento ($0-60$M)** | 19 | $[0.00, 60.07]\text{ Mbps}$ | **$2.11\text{ ms}$** | $3.04\text{ ms}$ | $4.00\text{ ms}$ | Régimen lineal estable. |
 | **Prueba ($80$M Pre-Cong.)** | 3 | $[79.97, 80.16]\text{ Mbps}$ | **$9.92\text{ ms}$** | $10.27\text{ ms}$ | $21.90\text{ ms}$ | Supera al baseline; inicio de encolamiento. |
 | **Congestión ($100$M Extrap.)** | 3 | $[99.73, 100.67]\text{ Mbps}$ | **$90.49\text{ ms}$** | $92.26\text{ ms}$ | $106.00\text{ ms}$ | **Quiebre por Bufferbloat:** RTT real explota a $125.6\text{ ms}$ vs $31.5\text{ ms}$ predicho. Caudal estancado en $76.3\text{ Mbps}$, $22.2\%$ de pérdida y $113{,}577$ descartes. |
-
----
-
-## 📄 Informe Final en LaTeX (5 Páginas)
-El informe escrito se encuentra en:
-`informe/informe_taller5.tex`
-
-Está formateado en dos columnas con estilo formal académico e incluye:
-1. Descripción reproducible del protocolo y topología de red.
-2. Diccionario de variables y controles de calidad aplicados a `ventanas.csv`.
-3. Análisis exploratorio e interpretación de las 6 figuras.
-4. Evaluación del modelo de Machine Learning vs línea base y residuos.
-5. Diagnóstico de congestión y propuesta de modelo segmentado (*Piecewise Linear*).
-6. Respuestas rigurosas a las 4 preguntas de reflexión del docente.
-
-Para compilar en **Overleaf**:
-Basta con subir el contenido de la carpeta `informe/` (el archivo `.tex` y la carpeta `graficos/`). Compila automáticamente en pdfLaTeX sin dependencias externas complejas.
 
 ---
 *Universidad Sergio Arboleda — Escuela de Ciencias Exactas e Ingeniería*
