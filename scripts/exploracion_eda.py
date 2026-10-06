@@ -11,7 +11,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # 1. Configuración de rutas y estilos
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "..")) if os.path.basename(CURRENT_DIR) == "scripts" else CURRENT_DIR
 CSV_PATH = os.path.join(BASE_DIR, "ventanas.csv")
 GRAFICOS_DIR = os.path.join(BASE_DIR, "graficos")
 os.makedirs(GRAFICOS_DIR, exist_ok=True)

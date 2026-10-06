@@ -13,8 +13,8 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 
-# Rutas relativas dinámicas
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "..")) if os.path.basename(CURRENT_DIR) == "scripts" else CURRENT_DIR
 OUTPUT_CSV = os.path.join(BASE_DIR, "ventanas.csv")
 
 registros = []
