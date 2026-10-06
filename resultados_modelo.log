@@ -1,8 +1,9 @@
 ================================================================================
 TALLER 5: MODELADO DE REGRESIÓN LINEAL Y PREDICCIÓN BAJO CONGESTIÓN
-Ruta base del proyecto: C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5
-Dataset analizado:     C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5\ventanas.csv
+Ruta base detectada:   C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5
+Dataset localizado:    C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5\ventanas.csv
 Archivo de log:        C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5\resultados_modelo.log
+Directorio de gráficos:C:\Users\proye\Documents\Universidad sergio Arbolea\Modulo_1\Introducion a Inteleginaci aritifical\Taller 5\graficos
 ================================================================================
 
 [PARTICIÓN DE DATOS]

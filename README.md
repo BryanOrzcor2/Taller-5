@@ -87,6 +87,16 @@ python scripts/modelo_regresion.py
 ```
 * **Salidas:** Genera los gráficos 5, 6, 7 y 8 en `graficos/`, calcula los parámetros del modelo lineal $\hat{y} = \beta_0 + \beta_1 x$, evalúa el conjunto de prueba a 80 Mbps, contrasta contra la línea base de la mediana, y evalúa el fallo de extrapolación a 100 Mbps con diagnóstico de cuello de botella (Goodput RX) y dispersión directa $y$ vs $\hat{y}$.
 
+> **💡 Portabilidad y Ejecución Dinámica (Multiplataforma):**
+> Los scripts detectan automáticamente la ubicación de `ventanas.csv` en cualquier sistema operativo (Windows, Linux, macOS) sin importar si se ejecutan desde la raíz del repositorio o desde dentro de la subcarpeta `scripts/`. También es posible indicar una ruta personalizada por parámetro o variable de entorno:
+> ```bash
+> # Ejecución estándar (desde la raíz o desde scripts/):
+> python scripts/modelo_regresion.py
+> 
+> # O pasando una ruta explícita al dataset:
+> python scripts/modelo_regresion.py --csv /ruta/personalizada/ventanas.csv
+> ```
+
 ---
 
 ## 📊 Síntesis de Resultados del Modelo de Machine Learning

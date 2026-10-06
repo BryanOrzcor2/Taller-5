@@ -13,8 +13,20 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "..")) if os.path.basename(CURRENT_DIR) == "scripts" else CURRENT_DIR
+def resolver_directorio_base() -> str:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    candidatos = [
+        os.path.abspath(os.path.join(script_dir, "..")),
+        script_dir,
+        os.getcwd(),
+        os.path.abspath(os.path.join(os.getcwd(), "..")),
+    ]
+    for c in candidatos:
+        if os.path.exists(os.path.join(c, "Ping Equipo A1")):
+            return c
+    return os.path.abspath(os.path.join(script_dir, ".."))
+
+BASE_DIR = resolver_directorio_base()
 OUTPUT_CSV = os.path.join(BASE_DIR, "ventanas.csv")
 
 registros = []

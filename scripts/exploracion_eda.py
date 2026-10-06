@@ -6,16 +6,71 @@ Universidad Sergio Arboleda - Maestría en Inteligencia Artificial
 """
 
 import os
+import sys
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# 1. Configuración de rutas y estilos
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "..")) if os.path.basename(CURRENT_DIR) == "scripts" else CURRENT_DIR
-CSV_PATH = os.path.join(BASE_DIR, "ventanas.csv")
-GRAFICOS_DIR = os.path.join(BASE_DIR, "graficos")
-os.makedirs(GRAFICOS_DIR, exist_ok=True)
+# 1. Configuración de Rutas Dinámicas y Multiplataforma
+def resolver_ruta_csv(nombre_archivo="ventanas.csv") -> Path:
+    """
+    Localiza dinámicamente la ruta del archivo CSV para garantizar portabilidad
+    total en cualquier sistema operativo (Windows, Linux, macOS) y desde cualquier
+    directorio de ejecución (terminal, VS Code, PyCharm, etc.), con soporte para
+    argumentos de línea de comandos.
+    """
+    import argparse
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--csv", type=str, default=None, help="Ruta personalizada al archivo CSV")
+    args, unknown = parser.parse_known_args()
+
+    # 1. Prioridad: argumento explícito --csv
+    if args.csv and Path(args.csv).exists():
+        return Path(args.csv).resolve()
+
+    # 2. Argumento posicional que termine en .csv
+    for arg in unknown:
+        if arg.lower().endswith(".csv") and Path(arg).exists():
+            return Path(arg).resolve()
+
+    # 3. Variable de entorno opcional
+    if "VENTANAS_CSV_PATH" in os.environ and Path(os.environ["VENTANAS_CSV_PATH"]).exists():
+        return Path(os.environ["VENTANAS_CSV_PATH"]).resolve()
+
+    # 4. Búsqueda contextual relativa al script o al directorio de trabajo
+    script_dir = Path(__file__).resolve().parent if "__file__" in globals() else Path.cwd()
+    candidatos = [
+        script_dir.parent / nombre_archivo,              # Raíz del proyecto (si se ejecuta desde scripts/)
+        script_dir / nombre_archivo,                     # Mismo directorio del script
+        script_dir.parent.parent / nombre_archivo,       # Dos niveles arriba
+        Path.cwd() / nombre_archivo,                     # Directorio de trabajo actual
+        Path.cwd() / "scripts" / nombre_archivo,
+        Path.cwd() / "data" / nombre_archivo,
+        Path.cwd() / "dataset" / nombre_archivo,
+        Path.cwd().parent / nombre_archivo,
+    ]
+
+    for c in candidatos:
+        if c.exists():
+            return c.resolve()
+
+    # 5. Búsqueda recursiva en el árbol de directorios si el archivo fue movido
+    for base in [script_dir.parent, Path.cwd()]:
+        try:
+            encontrados = list(base.glob(f"**/{nombre_archivo}"))
+            if encontrados:
+                return encontrados[0].resolve()
+        except Exception:
+            pass
+
+    # Fallback por defecto
+    return (script_dir.parent / nombre_archivo).resolve()
+
+CSV_PATH = resolver_ruta_csv("ventanas.csv")
+BASE_DIR = CSV_PATH.parent
+GRAFICOS_DIR = BASE_DIR / "graficos"
+GRAFICOS_DIR.mkdir(parents=True, exist_ok=True)
 
 plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default")
 plt.rcParams["font.sans-serif"] = "DejaVu Sans"
@@ -23,9 +78,21 @@ plt.rcParams["axes.edgecolor"] = "#cccccc"
 
 # 2. Cargar datos
 print("=" * 70)
-print("1. CARGA E INSPECCIÓN DE DATOS (ventanas.csv)")
+print("1. CARGA E INSPECCIÓN DE DATOS (EDA)")
+print(f"Ruta base detectada:   {BASE_DIR}")
+print(f"Dataset localizado:    {CSV_PATH}")
+print(f"Directorio de gráficos:{GRAFICOS_DIR}")
 print("=" * 70)
-df = pd.read_csv(CSV_PATH, parse_dates=["inicio"])
+
+if not CSV_PATH.exists():
+    raise FileNotFoundError(
+        f"No se encontró el archivo '{CSV_PATH.name}'.\n"
+        f"Ruta intentada: {CSV_PATH}\n"
+        f"Sugerencia: Ejecute primero 'python scripts/construir_dataset.py' o indique la ruta con:\n"
+        f"python scripts/exploracion_eda.py --csv /ruta/a/{CSV_PATH.name}"
+    )
+
+df = pd.read_csv(CSV_PATH, parse_dates=["inicio"], encoding="utf-8")
 df["tasa_tx_mbps"] = 8 * df["bytes_tx"] / (df["duracion_s"] * 1e6)
 
 print("\n--- Estructura del DataFrame (df.info()) ---")
