@@ -41,7 +41,7 @@
 \maketitle
 
 \begin{abstract}
-\noindent Este informe presenta el desarrollo metodológico y analítico del Taller 5 sobre captura de tráfico LAN, agregación en ventanas temporales de 60 segundos y modelado predictivo mediante Machine Learning Supervisado. A partir de un banco de pruebas controlado con equipos interconectados mediante conmutación Ethernet e inyección progresiva de tráfico UDP (\texttt{iperf3} entre 0 y 100 Mbps), se consolidó un conjunto de 25 observaciones válidas en \texttt{ventanas.csv}. Se entrenó un modelo de regresión lineal por mínimos cuadrados ordinarios (OLS) en régimen moderado ($x \le 60$ Mbps) obteniendo $\beta_0 = 13.94\text{ ms}$ y $\beta_1 = 0.1755\text{ ms/Mbps}$, logrando un MAE de $9.92\text{ ms}$ en prueba pre-congestión (80 Mbps). No obstante, al evaluar la extrapolación al escenario de congestión severa (100 Mbps), la hipótesis de linealidad colapsó: el RTT real medido escaló a $125.6\text{ ms}$ frente a una predicción ingenua de $31.5\text{ ms}$ ($MAE = 90.49\text{ ms}$), producto de saturación de colas (\textit{Bufferbloat}), pérdida del $22.2\%$ y más de $113{,}000$ paquetes descartados. Se discuten las implicaciones de la teoría de colas $M/M/1$, el alcance de modelos segmentados y las respuestas formales a las preguntas de reflexión de la actividad.
+\noindent Este informe presenta el desarrollo metodológico y analítico del Taller 5 sobre captura de tráfico LAN, agregación en ventanas temporales de 60 segundos y modelado predictivo mediante Machine Learning Supervisado. El banco de pruebas se instrumentó con tres computadores personales físicos (dos clientes generadores A1 y A2, y un único servidor receptor B) interconectados en el mismo segmento de red local (\texttt{172.25.3.0/24}) sin utilizar ningún switch de conmutación intermedio. Mediante inyección progresiva de tráfico UDP (\texttt{iperf3} entre 0 y 100 Mbps), se consolidó un conjunto de 25 observaciones válidas en \texttt{ventanas.csv}. Se entrenó un modelo de regresión lineal por mínimos cuadrados ordinarios (OLS) en régimen moderado ($x \le 60$ Mbps) obteniendo $\beta_0 = 13.94\text{ ms}$ y $\beta_1 = 0.1755\text{ ms/Mbps}$, logrando un MAE de $9.92\text{ ms}$ en prueba pre-congestión (80 Mbps). No obstante, al evaluar la extrapolación al escenario de congestión severa (100 Mbps), la hipótesis de linealidad colapsó: el RTT real medido escaló a $125.6\text{ ms}$ frente a una predicción ingenua de $31.5\text{ ms}$ ($MAE = 90.49\text{ ms}$), producto de saturación de colas en la interfaz del servidor (\textit{Bufferbloat}), pérdida del $22.2\%$ y más de $113{,}000$ paquetes descartados. Se discuten las implicaciones de la teoría de colas $M/M/1$, el alcance de modelos segmentados y las respuestas formales a las preguntas de reflexión de la actividad.
 \end{abstract}
 
 \textbf{Palabras clave:} Regresión Lineal, Latencia LAN, RTT, Bufferbloat, Congestión de Red, Machine Learning Supervisado, iperf3, Telemetría de Red.
@@ -51,30 +51,30 @@ En la gestión de infraestructuras de telecomunicaciones, la capacidad de antici
 
 El propósito de este trabajo es:
 \begin{enumerate}
-    \item Instrumentar una red LAN de laboratorio mediante sondas activas (\texttt{ping}), contadores acumulados de interfaz (\texttt{ip -s link}) y generadores controlados (\texttt{iperf3}), capturando metadatos sin comprometer la privacidad del tráfico.
+    \item Instrumentar un entorno de tres equipos de cómputo en LAN de laboratorio mediante sondas activas (\texttt{ping}), contadores acumulados de interfaz (\texttt{ip -s link}) y generadores controlados (\texttt{iperf3}), capturando metadatos sin comprometer la privacidad del tráfico.
     \item Estructurar y auditar un conjunto de datos agregado en ventanas temporales uniformes (\texttt{ventanas.csv}) según la especificación del taller.
     \item Explorar estadísticamente las distribuciones de RTT, tasa efectiva y pérdida de paquetes.
     \item Ajustar y validar un modelo de regresión lineal para predecir RTT en función de la tasa de transmisión (TX), contrastándolo con una línea base constante.
-    \item Cuantificar y argumentar física y matemáticamente el quiebre de la linealidad en condiciones de congestión severa (\textit{Bufferbloat}).
+    \item Cuantificar y argumentar física y matemáticamente el quiebre de la linealidad en condiciones de congestión severa (\textit{Bufferbloat}) en el nodo receptor.
 \end{enumerate}
 
 \section{Protocolo Experimental y Topología (Evidencia 1)}
 
-\subsection{Topología del Banco de Pruebas}
-El entorno experimental se configuró sobre una red de área local (LAN) de laboratorio conmutada mediante un switch Ethernet Fast/Gigabit Ethernet dedicado. Se articularon tres entidades lógicas:
+\subsection{Topología Real del Banco de Pruebas (3 PCs sin Switch)}
+El entorno experimental se configuró sobre una red de área local (LAN) conformada específicamente por \textbf{tres computadores personales físicos (dos clientes y un servidor receptor)}, interconectados en el mismo segmento de red local (\texttt{172.25.3.0/24}). \textbf{No se utilizó ningún switch de conmutación intermedio}. La arquitectura física y lógica operó de la siguiente forma:
 \begin{itemize}
-    \item \textbf{Equipo A1 y A2 (Generadores/Sondas):} Nodos clientes encargados de transmitir tráfico de fondo hacia el servidor y emitir simultáneamente sondas ICMP cada segundo ($1\text{ Hz}$).
-    \item \textbf{Equipo B (Servidor Receptor):} Nodo destino operando en modo servidor \texttt{iperf3 -s} en puerto TCP/UDP 5201 y respondiendo a ecos ICMP.
-    \item \textbf{Medio de Transmisión:} Cableado UTP Categoría 5e/6, full-dúplex con enlace de acceso nominal de $100\text{ Mbps}$.
+    \item \textbf{Equipo A1 (\texttt{172.25.3.179}) y Equipo A2 (\texttt{172.25.3.118}):} Nodos clientes generadores encargados de inyectar tráfico de fondo hacia el servidor mediante \texttt{iperf3} y emitir simultáneamente sondas ICMP cada segundo ($1\text{ Hz}$) para medir latencia.
+    \item \textbf{Equipo B (\texttt{172.25.3.38}) (Servidor Central):} Nodo de destino operando el servicio \texttt{iperf3 -s} en puerto TCP/UDP 5201 y respondiendo a los ecos ICMP.
+    \item \textbf{Punto de Cuello de Botella Físico:} Al no existir switch, la capacidad máxima de transferencia y el almacenamiento de paquetes en espera residieron exclusivamente en la tarjeta de red (NIC), el controlador (\textit{driver}) y los búferes de recepción del socket del sistema operativo en el Servidor B.
 \end{itemize}
 
 \subsection{Control de Sesgo y Procedimiento de Captura}
-Para evitar sesgos temporales y efectos de memoria en los búferes de conmutación:
+Para evitar sesgos temporales y efectos de memoria en los búferes del sistema receptor:
 \begin{enumerate}
-    \item \textbf{Línea Base en Reposo:} Se realizaron 10 ventanas independientes de 60 segundos sin tráfico de carga experimental (5 réplicas en A1 y 5 en A2), midiendo el RTT intrínseco.
-    \item \textbf{Generación de Carga Controlada:} Se definieron escalones de carga sintética UDP mediante el parámetro \texttt{-u -b [Tasa]M -t 60 --json}. Se evaluaron 20, 40, 60 y 80 Mbps con 3 réplicas alternadas por nivel.
-    \item \textbf{Escenario de Congestión Aislada:} Se aplicó una tasa ofrecida de $100\text{ Mbps}$ en un enlace acotado para observar el cambio de régimen sin afectar la red compartida.
-    \item \textbf{Sincronización y Registro:} En cada ventana de 60 segundos se ejecutó de forma paralela la sonda ICMP (\texttt{ping -n -i 1 -c 60}), capturando la diferencia de bytes, descartes y errores en la interfaz mediante \texttt{ip -s link show dev eth0} antes y después de cada intervalo.
+    \item \textbf{Línea Base en Reposo:} Se realizaron 10 ventanas independientes de 60 segundos sin tráfico de carga experimental (5 réplicas desde A1 y 5 desde A2), midiendo el RTT intrínseco de procesamiento y propagación.
+    \item \textbf{Generación de Carga Controlada:} Se definieron escalones de carga sintética UDP mediante el parámetro \texttt{-u -b [Tasa]M -t 60 --json}. Se evaluaron 20, 40, 60 y 80 Mbps con 3 réplicas alternadas entre A1 y A2.
+    \item \textbf{Escenario de Congestión Combinada:} Se aplicó una tasa ofrecida de $100\text{ Mbps}$ sumando la emisión de los clientes hacia el servidor receptor para inducir la saturación de su interfaz de entrada.
+    \item \textbf{Sincronización y Registro:} En cada ventana de 60 segundos se ejecutó en paralelo la sonda ICMP (\texttt{ping -n -i 1 -c 60}), capturando contadores de paquetes, descartes y bytes mediante \texttt{ip -s link show dev eth0} antes y después de cada intervalo.
 \end{enumerate}
 
 \section{Construcción y Auditoría del Conjunto de Datos (Evidencia 2)}
@@ -257,7 +257,9 @@ donde $x_{\text{codo}} \approx 76\text{ Mbps}$ define el umbral de saturación.
 \section{Respuestas a las Preguntas de Reflexión}
 
 \subsection{Pregunta 1: ¿Por qué observar más bytes en A no necesariamente permite conocer la utilización total del switch?}
-Observar los contadores en la interfaz del equipo A mide únicamente el tráfico que atraviesa ese puerto de acceso específico. Un switch es una matriz de conmutación multipuerto (\textit{switching fabric}); si otros equipos (e.g. equipos C y D en otros puertos) transmiten tráfico simultáneo que satura la placa posterior (\textit{backplane}) o compite por el mismo búfer de salida compartida hacia el servidor B, el switch puede estar operando al 100\% de su capacidad de procesamiento global sin que el puerto A registre un volumen elevado de bytes. Además, contar bytes en A ignora tramas de broadcast, multicast de control o tráfico inter-VLAN ajeno al flujo observado.
+\noindent \textbf{Nota metodológica del laboratorio real:} En el banco de pruebas de este taller se utilizaron tres computadores personales (dos clientes A1 y A2, y un servidor receptor B) directamente interconectados en el mismo segmento LAN sin switch intermedio; por lo tanto, la saturación física residió en la interfaz de red (NIC) y búferes del servidor B.
+
+\noindent No obstante, respondiendo al interrogante teórico sobre switches: Observar los contadores en la interfaz del equipo A mide únicamente el tráfico que atraviesa ese puerto de acceso específico. Un switch es una matriz de conmutación multipuerto (\textit{switching fabric}); si otros equipos (e.g. equipos C y D en otros puertos) transmiten tráfico simultáneo que satura la placa posterior (\textit{backplane}) o compite por el mismo búfer de salida compartida hacia el servidor B, el switch puede estar operando al 100\% de su capacidad de procesamiento global sin que el puerto A registre un volumen elevado de bytes. Además, contar bytes en A ignora tramas de broadcast, multicast de control o tráfico inter-VLAN ajeno al flujo observado.
 
 \subsection{Pregunta 2: ¿Qué diferencia hay entre RTT medido con ping, latencia unidireccional y tiempo de respuesta de una aplicación?}
 \begin{itemize}

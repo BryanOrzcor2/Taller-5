@@ -12,6 +12,8 @@
 ## 📌 Descripción del Proyecto
 Este proyecto contiene el ciclo completo de captura de telemetría de red, procesamiento de series temporales por ventanas de 60 segundos, análisis exploratorio de datos (EDA), y ajuste/evaluación de modelos de **Machine Learning Supervisado (Regresión Lineal OLS)** para anticipar la latencia de red (RTT) e identificar empíricamente la ruptura del supuesto de linealidad ante condiciones de congestión severa (*Bufferbloat*).
 
+> **Nota de Topología Experimental Real:** El banco de pruebas se configuró con **tres equipos de cómputo físicos (dos clientes generadores A1 y A2, y un único servidor central receptor B)** interconectados en el mismo segmento de red local (`172.25.3.0/24`) **sin utilizar ningún switch de conmutación intermedio**. El cuello de botella físico y la saturación de búferes residen directamente en la tarjeta de red (NIC) y las colas de recepción del servidor B.
+
 El desarrollo responde estrictamente a la guía y rúbrica de evaluación oficial de **5.0 puntos** contenida en `Taller_5_MIA.pdf`.
 
 ---
